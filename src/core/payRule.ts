@@ -1,7 +1,7 @@
 /** Pay rule defaults and validation (pure). */
 
 import { ALL_WEEKDAYS_MASK, INTERVAL_OPTIONS, ROUNDING_MODES } from './types';
-import type { CustomBonus, FixedBonus, PayRule, Premium, ShiftBreak } from './types';
+import type { CustomBonus, FixedBonus, PayRule, Premium, ShiftBreak, WeekdayIndex } from './types';
 
 export const SUPPORTED_CURRENCIES = ['EUR', 'GBP', 'CHF', 'USD', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN'] as const;
 export const DEFAULT_CURRENCY = 'EUR';
@@ -45,6 +45,23 @@ export function clonePayRule(rule: PayRule): PayRule {
     customBonuses: rule.customBonuses.map((b) => ({ ...b })),
     fixedBonuses: rule.fixedBonuses.map((b) => ({ ...b })),
   };
+}
+
+/** Canonical string of everything that influences earnings; equal signatures mean identical pay rules. */
+export function payRuleSignature(rule: PayRule): string {
+  const premium = (p: Premium | null) => (p ? [p.valueType, p.value, p.mode] : null);
+  return JSON.stringify({
+    c: rule.currency,
+    h: rule.hourlyRate,
+    w: [0, 1, 2, 3, 4, 5, 6].map((d) => rule.weekdayRates[d as WeekdayIndex] ?? null),
+    sa: premium(rule.saturday),
+    su: premium(rule.sunday),
+    ho: premium(rule.holiday),
+    cb: rule.customBonuses.map((b) => [b.name, b.valueType, b.value, b.mode, b.weekdayMask, b.startMinute, b.endMinute]),
+    fb: rule.fixedBonuses.map((b) => [b.name, b.amountCents, b.condition]),
+    i: rule.intervalMinutes,
+    r: rule.roundingMode,
+  });
 }
 
 function isInt(n: unknown): n is number {

@@ -17,6 +17,31 @@ export interface BuiltInHoliday {
   key: string;
 }
 
+/** English names stored with built-in holidays; the UI shows translations by `key` (see i18n `holiday.*`). */
+export const HOLIDAY_NAMES_EN: Record<string, string> = {
+  new_year: "New Year's Day",
+  easter_sunday: 'Easter Sunday',
+  easter_monday: 'Easter Monday',
+  good_friday: 'Good Friday',
+  labour_day: 'Labour Day',
+  ascension: 'Ascension Day',
+  whit_sunday: 'Whit Sunday',
+  whit_monday: 'Whit Monday',
+  national_day_be: 'Belgian National Day',
+  assumption: 'Assumption Day',
+  all_saints: "All Saints' Day",
+  armistice: 'Armistice Day',
+  christmas: 'Christmas Day',
+  second_christmas: 'Second Christmas Day',
+  kings_day: "King's Day",
+  liberation_day: 'Liberation Day',
+  victory_1945: 'Victory in Europe Day',
+  bastille_day: 'Bastille Day',
+  german_unity: 'German Unity Day',
+  europe_day: 'Europe Day',
+  national_day_lu: 'Luxembourg National Day',
+};
+
 /** Western (Gregorian) Easter Sunday as 'YYYY-MM-DD' (Meeus/Jones/Butcher algorithm). */
 export function easterSunday(year: number): string {
   const a = year % 19;
@@ -74,7 +99,7 @@ const DE: Rule[] = [
   { key: 'whit_monday', easter: 50 },
   { key: 'german_unity', month: 10, day: 3 },
   { key: 'christmas', month: 12, day: 25 },
-  { key: 'boxing_day', month: 12, day: 26 },
+  { key: 'second_christmas', month: 12, day: 26 },
 ];
 
 const LU: Rule[] = [
@@ -88,7 +113,7 @@ const LU: Rule[] = [
   { key: 'assumption', month: 8, day: 15 },
   { key: 'all_saints', month: 11, day: 1 },
   { key: 'christmas', month: 12, day: 25 },
-  { key: 'boxing_day', month: 12, day: 26 },
+  { key: 'second_christmas', month: 12, day: 26 },
 ];
 
 function applyRules(rules: Rule[], year: number): BuiltInHoliday[] {
@@ -114,7 +139,7 @@ function netherlands(year: number): BuiltInHoliday[] {
     { key: 'whit_sunday', date: addDaysToDateString(easter, 49) },
     { key: 'whit_monday', date: addDaysToDateString(easter, 50) },
     { key: 'christmas', date: formatDateString(year, 12, 25) },
-    { key: 'boxing_day', date: formatDateString(year, 12, 26) },
+    { key: 'second_christmas', date: formatDateString(year, 12, 26) },
   ];
 }
 
