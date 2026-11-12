@@ -94,5 +94,5 @@ See [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md).
 
 ## Status
 
-See [`DEVELOPMENT_STATUS.md`](DEVELOPMENT_STATUS.md) for an honest list of what is verified and what is not, and
+Before a release run the on-device checklist in [`docs/SMOKE_TEST.md`](docs/SMOKE_TEST.md). See [`DEVELOPMENT_STATUS.md`](DEVELOPMENT_STATUS.md) for an honest list of what is verified and what is not, and
 [`CHANGELOG.md`](CHANGELOG.md) for the release history.

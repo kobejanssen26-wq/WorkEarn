@@ -77,7 +77,7 @@ BUILD_RESULT_PLACEHOLDER
 ## 7. Remaining manual actions (requires developer action)
 
 1. Create the upload keystore and add the four GitHub secrets (`docs/ANDROID_RELEASE.md`), then run the *Android release bundle (AAB)* workflow to get a **signed** `.aab`.
-2. Smoke-test the build on a real phone.
+2. Smoke-test the build on a real phone (`docs/SMOKE_TEST.md`, about 15 minutes).
 3. Fill in developer name / support email, host the privacy policy and enter its URL in the Play Console.
 4. Complete the Play Console declarations (Data safety, content rating, target audience, ads = none, financial features = none).
 5. Optionally replace the generated screenshots with device screenshots.
