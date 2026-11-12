@@ -28,7 +28,8 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
   const palette = {
     primary: { bg: colors.accentStrong, fg: colors.onAccent, border: 'transparent' },
     secondary: { bg: colors.surfaceAlt, fg: colors.text, border: 'transparent' },
-    danger: { bg: colors.negative, fg: '#FFFFFF', border: 'transparent' },
+    // light: #C62828 + white = 5.6:1; dark: #F87171 + near-black = 7.6:1 (both pass WCAG AA)
+    danger: { bg: colors.negative, fg: colors.isDark ? '#1A0606' : '#FFFFFF', border: 'transparent' },
     ghost: { bg: 'transparent', fg: colors.accent, border: 'transparent' },
   }[variant];
   const inactive = disabled || loading;

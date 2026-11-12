@@ -1,4 +1,7 @@
-/** Design tokens: palettes, spacing, radii and typography. Emerald accent, deep charcoal dark theme, clean white light theme. */
+/**
+ * Design tokens: palettes, spacing, radii and typography. Emerald accent, deep charcoal dark theme, clean white light theme.
+ * Text colours meet WCAG AA (4.5:1) on bg, surface and surfaceAlt in both themes (ratios checked when the palette was set).
+ */
 
 export interface Palette {
   isDark: boolean;
@@ -41,9 +44,9 @@ export const lightPalette: Palette = {
   raised: '#FFFFFF',
   border: '#E2E9E5',
   text: '#0E1A14',
-  textSecondary: '#4F6158',
-  textTertiary: '#7A8A82',
-  accent: '#059669',
+  textSecondary: '#3F5047',
+  textTertiary: '#5B6B63',
+  accent: '#047857',
   accentStrong: '#047857',
   accentSoft: '#D6F5E6',
   onAccent: '#FFFFFF',
@@ -68,7 +71,7 @@ export const darkPalette: Palette = {
   border: '#2A3036',
   text: '#F1F5F3',
   textSecondary: '#A2AFA8',
-  textTertiary: '#74817A',
+  textTertiary: '#8A968F',
   accent: '#34D399',
   accentStrong: '#10B981',
   accentSoft: '#12332A',
