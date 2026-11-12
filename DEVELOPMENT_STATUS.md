@@ -30,12 +30,12 @@ Legend: **Completed** = implemented and verified by the evidence listed · **Not
 
 | Check | Result |
 | --- | --- |
-| `npm test` (Jest, 12 suites) | **135 tests pass** |
+| `npm test` (Jest, 13 suites) | **144 tests pass** |
 | `npm run typecheck` (`tsc --noEmit`, strict) | **pass** |
 | `npm run lint` (`expo lint`, ESLint 9 + React-compiler rules) | **pass, 0 problems** |
 | `expo export --platform android` (Metro + Hermes) | **pass** (4.4 MB Hermes bytecode) |
 | Web-only preview code absent from the Android bundle | **verified** (grep of the plain-JS export: no `sql.js`, seed or demo data) |
-| Same checks on GitHub-hosted runners (Node 22) | **pass** (`quality` job of run [43202040568](https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43202040568)) |
+| Same checks on GitHub-hosted runners (Node 22) | **pass** in both release runs (`quality` job) |
 
 What the tests do **not** cover: they cannot run the app on a real Android device or emulator (none is available here). UI tests run in Jest with mocked native modules
 (reanimated, svg, router, keyboard controller, pickers) and a **real** SQLite engine. Behaviour that depends on the Android runtime (Hermes `Intl`, native date/time
@@ -54,7 +54,7 @@ size, clipped chip rows and tab labels, noisy compact amounts, an incoherent sto
 | versionName / versionCode | `1.0.0` / `1` |
 | targetSdk / compileSdk / minSdk | **36** / 37 / 24 |
 | Why target 36 | Official Google requirement quoted from <https://developer.android.com/google/play/requirements/target-sdk> (read 12 Nov 2026): from 31 Aug 2026 new apps and updates must target Android 16 (API 36) or higher. |
-| Permissions | `INTERNET`, `READ/WRITE_EXTERNAL_STORAGE`, `SYSTEM_ALERT_WINDOW`, `VIBRATE` removed with `tools:node="remove"`. The release workflow prints the merged manifest of the built bundle. |
+| Permissions (merged manifest of the built bundle) | No network, storage, overlay, vibrate or install-referrer permission. The only `uses-permission` is the app-internal, signature-level `com.workearn.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` that AndroidX adds to every app (not visible to users). The release workflow **fails** on anything else. |
 | Backups | `allowBackup="false"` |
 | Icons / splash | Adaptive icon (foreground + background + monochrome), splash with dark variant (`#FFFFFF` / `#0F1113`) |
 | Shrinking | R8 minification and resource shrinking enabled |
@@ -62,7 +62,28 @@ size, clipped chip rows and tab labels, noisy compact amounts, an incoherent sto
 
 ## 5. Android App Bundle
 
-BUILD_RESULT_PLACEHOLDER
+| Route | Result |
+| --- | --- |
+| **EAS Build** — `npx eas-cli build --platform android --profile production --non-interactive` (attempted 12 Nov 2026) | **Blocked — requires developer action.** Output: *"An Expo user account is required to proceed. Either log in with `eas login` or set the `EXPO_TOKEN` environment variable…"* then *"Error: build command failed."* (`api.expo.dev` and `expo.dev` are also denied by this environment's network policy.) |
+| **Local Gradle build in the agent sandbox** | **Blocked.** `dl.google.com` (Android SDK, NDK, Google Maven) is denied by the sandbox network policy (HTTP 403) and no Android SDK is installed. |
+| **GitHub Actions** (ubuntu-latest, JDK 21, Expo prebuild, Gradle `bundleRelease`) | **Completed — two successful runs.** |
+
+**Final bundle (run #2, commit `230e743`)**
+
+- Run: <https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43205520385>
+- **Artifact: `workearn-UNSIGNED-aab`** (id 13939975897): <https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43205520385/artifacts/13939975897>
+  — a zip of 71,344,571 bytes (SHA-256 of the zip `b8fefebf2405a5c1b4b4624a34164360f22804472144e4a36a2de6385bb0a442`) containing `WorkEarn-1.0.0-UNSIGNED.aab` and `aab-report.txt`.
+  Kept until 12 Dec 2026; downloading needs a GitHub login with access to the repository.
+- Verified inside the job with Google's bundletool (from the job log): `validate` → **VALID**; `package="com.workearn.app"`; `versionCode="1"`; `versionName="1.0.0"`;
+  `minSdkVersion="24"`, **`targetSdkVersion="36"`**, `compileSdkVersion="37"`; `allowBackup="false"`;
+  only the internal signature permission listed above; **signature: unsigned** (`jar is unsigned`).
+  The workflow does not list the bundle's native-library ABIs, so no claim is made about them here.
+- **The bundle is UNSIGNED, so Google Play will reject it.** Add the four upload-key secrets (`docs/ANDROID_RELEASE.md`) and re-run the workflow to get `workearn-release-aab`.
+- **Not verified here:** I could not download the AAB into this environment (the artifact storage host is blocked), so the checks above are the workflow's own bundletool output, not a local inspection. The app has not been run from this bundle on a device.
+- Run #1 (commit `df1443d`) also succeeded but its bundle additionally declared the Google Play *install referrer* permission (pulled in by `expo-application`, which was only used to show the version).
+  That dependency was removed in `230e743`; **do not use run #1's artifact.**
+
+Build time on GitHub (run #2, from the job timestamps): the `build-aab` job took about 16 minutes (Gradle `bundleRelease` about 14.5 minutes); the whole workflow, including the `quality` job, about 17.5 minutes.
 
 ## 6. Google Play preparation
 
@@ -82,3 +103,5 @@ BUILD_RESULT_PLACEHOLDER
 4. Complete the Play Console declarations (Data safety, content rating, target audience, ads = none, financial features = none).
 5. Optionally replace the generated screenshots with device screenshots.
 6. Merge the development branch into your default branch (a pull request is not opened automatically).
+7. Git history: the first five commits on the branch (`ffb02de` … `df1443d`, pushed early in the session) are not signed, so GitHub shows them as *Unverified*; all later commits are signed.
+   Re-signing already-pushed commits would need a force-push, which was not done without your approval.
