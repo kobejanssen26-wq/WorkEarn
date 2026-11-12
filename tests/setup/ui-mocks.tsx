@@ -77,3 +77,8 @@ jest.mock('@/services/exportCsv', () => {
     shareCsv: jest.fn(async () => 'shared'),
   };
 });
+
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: { expoConfig: { version: '1.0.0', android: { versionCode: 1, package: 'com.workearn.app' } } },
+}));

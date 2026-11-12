@@ -29,7 +29,7 @@ describe('Google Play store listing texts', () => {
     for (const text of [...titles, ...shorts, ...fulls]) {
       expect(text).not.toMatch(/https?:\/\//i);
       expect(text).not.toMatch(/[\w.-]+@[\w.-]+\.\w+/);
-      expect(text).not.toMatch(/#1|best|number one|award|official|guaranteed/i);
+      expect(text).not.toMatch(/#1|\b(best|number one|award|official|guaranteed)\b/i);
     }
   });
 

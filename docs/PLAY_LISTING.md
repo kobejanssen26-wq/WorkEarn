@@ -45,7 +45,7 @@ CALENDAR, HISTORY AND STATISTICS
 PRIVATE BY DESIGN
 • Works fully offline, no account needed
 • No ads, no analytics, no tracking
-• The app requests no Android permissions
+• No internet access and no permissions for your contacts, location or files
 • Export your shifts to CSV (Excel Europe or international format) whenever you like
 • Delete all data in one tap
 
@@ -103,7 +103,7 @@ KALENDER, HISTORIEK EN STATISTIEKEN
 PRIVÉ OP ZICH
 • Werkt volledig offline, geen account nodig
 • Geen advertenties, geen analytics, geen tracking
-• De app vraagt geen Android-machtigingen
+• Geen internettoegang en geen machtigingen voor je contacten, locatie of bestanden
 • Exporteer je shifts naar CSV (Excel Europa of internationaal formaat) wanneer je wilt
 • Verwijder alle gegevens met één tik
 

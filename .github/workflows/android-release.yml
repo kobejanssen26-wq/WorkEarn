@@ -16,10 +16,12 @@ on:
   push:
     branches: ['claude/**']
     tags: ['v*']
+    paths-ignore: ['**/*.md', 'docs/**', 'store/**']
 
+# Never cancel a running (expensive) native build; a newer push waits in the queue instead.
 concurrency:
   group: android-release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -133,10 +135,14 @@ jobs:
           grep -q "android:versionCode=\"$EXPECT_CODE\"" "$RUNNER_TEMP/manifest.xml"
           grep -q "android:versionName=\"$EXPECT_NAME\"" "$RUNNER_TEMP/manifest.xml"
           grep -q 'android:targetSdkVersion="36"' "$RUNNER_TEMP/manifest.xml"
-          if grep -q '<uses-permission' "$RUNNER_TEMP/manifest.xml"; then
-            echo "::warning::The bundle declares permissions:"; grep '<uses-permission' "$RUNNER_TEMP/manifest.xml"
-          else
-            echo "No Android permissions are declared."
+          # The privacy claims depend on this: the only permission allowed is the AndroidX-internal, signature-level one.
+          PERMS=$(grep -o '<uses-permission[^>]*android:name="[^"]*"' "$RUNNER_TEMP/manifest.xml" | sed 's/.*android:name="//; s/"$//' | sort -u || true)
+          UNEXPECTED=$(printf '%s\n' "$PERMS" | grep -v -x -e "" -e "$EXPECT_PKG.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" || true)
+          echo "Declared permissions:"; printf '%s\n' "${PERMS:-none}"
+          if [ -n "$UNEXPECTED" ]; then
+            echo "::error::Unexpected permissions in the bundle (update the privacy documents or remove the dependency):"
+            printf '%s\n' "$UNEXPECTED"
+            exit 1
           fi
           mkdir -p dist-aab
           if [ "${{ steps.signing.outputs.signed }}" = "true" ]; then

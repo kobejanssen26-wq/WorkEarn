@@ -37,5 +37,7 @@ Note on **financial info**: the app lets users record their own earnings, but th
 
 ## Permissions
 
-The generated Android manifest removes the default `INTERNET`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `SYSTEM_ALERT_WINDOW`
-and `VIBRATE` permissions. The release workflow prints the merged manifest of the built bundle and warns if any `uses-permission` remains.
+The Android manifest removes the default `INTERNET`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `SYSTEM_ALERT_WINDOW` and `VIBRATE`
+permissions, and the app does not include Google's Install Referrer library. The release workflow dumps the **merged** manifest of the built
+bundle and **fails** if any `uses-permission` other than `<package>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` appears. That one is an internal,
+signature-level permission that AndroidX adds to every app; it is not shown to users and gives no access to data.

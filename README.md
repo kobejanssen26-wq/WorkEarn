@@ -89,7 +89,7 @@ Target API level: **36** (Android 16), as required by Google Play for new apps a
 
 ## Privacy
 
-No account, analytics, advertising or tracking; the app declares no Android permissions and keeps all data on the device.
+No account, analytics, advertising or tracking; the app has no internet permission and no access to personal data, and keeps all data on the device.
 See [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md).
 
 ## Status

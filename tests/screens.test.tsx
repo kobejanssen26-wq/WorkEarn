@@ -4,6 +4,7 @@ import CalendarScreen from '@/features/calendar/CalendarScreen';
 import EmployerFormScreen from '@/features/employers/EmployerFormScreen';
 import EmployersScreen from '@/features/employers/EmployersScreen';
 import ExportScreen from '@/features/settings/ExportScreen';
+import { AboutScreen, PrivacyScreen } from '@/features/settings/InfoScreens';
 import SettingsScreen from '@/features/settings/SettingsScreen';
 import HistoryScreen from '@/features/shifts/HistoryScreen';
 import ShiftEditorScreen from '@/features/shifts/ShiftEditorScreen';
@@ -168,5 +169,22 @@ describe('settings and export', () => {
     expect(lines[0]).toBe('Date;Employer;Start;End;Unpaid break (min);Paid hours;Counted hours;Earnings for time;Fixed bonuses;Tips;Extras;Total;Currency;Notes');
     expect(lines[1]).toBe('2026-03-09;Café;2026-03-09 09:00;2026-03-09 13:00;0;4,00;4,00;48,00;0,00;0,00;0,00;48,00;EUR;');
     expect(lines).toHaveLength(5); // header + 3 shifts + trailing empty after CRLF
+  });
+});
+
+describe('information screens', () => {
+  it('shows the shipped version, build number and package', async () => {
+    const db = await openTestDb();
+    await show(<AboutScreen />, db);
+    expect(await screen.findByText('1.0.0')).toBeTruthy();
+    expect(screen.getByText('com.workearn.app')).toBeTruthy();
+    expect(screen.getByText('1')).toBeTruthy();
+  });
+
+  it('privacy information states what the app stores and what it cannot do', async () => {
+    const db = await openTestDb();
+    await show(<PrivacyScreen />, db);
+    expect(await screen.findByText(/no account, no server and no tracking/i)).toBeTruthy();
+    expect(screen.getByText(/does not request internet access/i)).toBeTruthy();
   });
 });

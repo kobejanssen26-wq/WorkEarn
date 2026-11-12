@@ -24,11 +24,11 @@ When you use the app it stores the following information **only in a private dat
 - a list of public holidays (generated on the device) and any custom holidays you add.
 
 This information is created by you, stays on your device, and is not accessible to other apps. The app does not read your contacts,
-location, photos, files, microphone, camera or any other personal data, and does not request any Android permission.
+location, photos, files, microphone, camera or any other personal data, and does not request any permission to access them.
 
 ## Network access
 
-The app does not request internet access and cannot send data over the network.
+The app does not request internet access and cannot send data over the network. (Its Android manifest contains a single internal, signature-level permission that Android's support library adds to every app; it is not shown to users and gives no access to data.)
 
 ## Exporting your data
 

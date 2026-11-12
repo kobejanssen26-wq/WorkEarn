@@ -373,7 +373,7 @@ export const nl: Record<TKey, string> = {
   'privacy.stored.title': 'Wat wordt bewaard',
   'privacy.stored.body': 'Werkgevers, loonregels, shifts, pauzes, fooien, notities en je instellingen worden bewaard in een privédatabase op dit toestel. Andere apps kunnen die niet lezen.',
   'privacy.network.title': 'Netwerk en machtigingen',
-  'privacy.network.body': 'WorkEarn vraagt geen internettoegang of andere Android-machtigingen. De app kan je gegevens nergens naartoe sturen.',
+  'privacy.network.body': 'WorkEarn vraagt geen internettoegang en heeft geen machtiging om je contacten, locatie, foto’s, bestanden, camera of microfoon te lezen. De app kan je gegevens nergens naartoe sturen.',
   'privacy.analytics.title': 'Geen analytics, geen advertenties',
   'privacy.analytics.body': 'De app bevat geen analytics-, advertentie-, tracking- of crashrapportagebibliotheken.',
   'privacy.export.title': 'Exporteren',

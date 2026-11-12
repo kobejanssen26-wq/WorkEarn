@@ -15,7 +15,7 @@ All notable changes to WorkEarn. Versions follow `versionName` in `app.json`; `a
   week start, time format, earnings preferences, CSV export (Excel-Europe or international dialect), privacy information, app information.
 - Relational SQLite schema with migrations, foreign keys, check constraints and indexes; a single running shift is enforced by the database.
 - Versioned pay rules so historical shifts keep their original configuration.
-- Production Android configuration: package `com.workearn.app`, target API 36, no Android permissions, backups disabled, adaptive and
+- Production Android configuration: package `com.workearn.app`, target API 36, no network / storage / personal-data permissions (verified on the merged manifest of the built bundle), backups disabled, adaptive and
   monochrome icons, splash screen, R8 minification and resource shrinking, upload-key release signing via environment / secrets.
 - GitHub Actions: CI (typecheck, lint, tests, JS bundle) and an Android release workflow that builds, validates (bundletool) and stores the AAB.
 - EAS Build profiles (development, preview, production).

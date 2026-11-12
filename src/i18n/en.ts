@@ -371,7 +371,7 @@ export const en = {
   'privacy.stored.title': 'What is stored',
   'privacy.stored.body': 'Employers, pay rules, shifts, breaks, tips, notes and your settings are stored in a private database on this device. Other apps cannot read it.',
   'privacy.network.title': 'Network and permissions',
-  'privacy.network.body': 'WorkEarn does not request internet access or any other Android permission. It cannot send your data anywhere.',
+  'privacy.network.body': 'WorkEarn does not request internet access, and it has no permission to read your contacts, location, photos, files, camera or microphone. It cannot send your data anywhere.',
   'privacy.analytics.title': 'No analytics, no ads',
   'privacy.analytics.body': 'There are no analytics, advertising, tracking or crash-reporting libraries in the app.',
   'privacy.export.title': 'Exporting',

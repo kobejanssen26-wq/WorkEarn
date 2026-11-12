@@ -1,4 +1,4 @@
-import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import { StyleSheet, View } from 'react-native';
 
 import type { TKey } from '@/i18n';
@@ -39,6 +39,8 @@ export function PrivacyScreen() {
 
 export function AboutScreen() {
   const { t } = useI18n();
+  // The app config (app.json) is embedded in the build, so this is the version that was actually shipped.
+  const config = Constants.expoConfig;
   return (
     <Screen variant="stack" title={t('about.title')}>
       <Card>
@@ -51,9 +53,9 @@ export function AboutScreen() {
       </Card>
       <Card padded={false}>
         <View style={styles.rows}>
-          <Row title={t('about.version')} right={<Text variant="bodyStrong">{Application.nativeApplicationVersion ?? '1.0.0'}</Text>} />
-          <Row title={t('about.build')} right={<Text variant="bodyStrong">{Application.nativeBuildVersion ?? '1'}</Text>} />
-          <Row title={t('about.package')} right={<Text variant="label">{Application.applicationId ?? 'com.workearn.app'}</Text>} last />
+          <Row title={t('about.version')} right={<Text variant="bodyStrong">{config?.version ?? '—'}</Text>} />
+          <Row title={t('about.build')} right={<Text variant="bodyStrong">{String(config?.android?.versionCode ?? '—')}</Text>} />
+          <Row title={t('about.package')} right={<Text variant="label">{config?.android?.package ?? '—'}</Text>} last />
         </View>
       </Card>
       <Text variant="label" color="textSecondary">
