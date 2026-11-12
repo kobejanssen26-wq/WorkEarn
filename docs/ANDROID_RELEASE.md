@@ -33,9 +33,10 @@ Keep the keystore file, its password, the alias and the key password. If you los
    | `ANDROID_UPLOAD_KEY_ALIAS` | `workearn-upload` |
    | `ANDROID_UPLOAD_KEY_PASSWORD` | key password |
 
-2. **Actions → Android release bundle (AAB) → Run workflow** (it also runs on pushes to `claude/**` branches and `v*` tags).
+2. **Actions → Android release bundle (AAB) → Run workflow** (it also runs on pushes to `claude/**` branches and `v*` tags; pushes that only touch `*.md`, `docs/` or `store/` are skipped, and a running build is never cancelled — a newer push waits in the queue).
 3. When it finishes, open the run and download the artifact **`workearn-release-aab`** (contains `WorkEarn-<version>-release.aab` and
-   `aab-report.txt` with checksum, bundletool validation, manifest and signature check).
+   `aab-report.txt` with checksum, bundletool validation, the merged manifest and the signature check). The workflow **fails** if the bundle declares any permission other than AndroidX's internal `<package>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, or if package / versionCode / versionName / targetSdk 36 do not match `app.json`.
+   Artifacts are kept for 30 days; downloading needs a GitHub login with access to the repository.
 4. Upload the `.aab` in **Play Console → Testing / Production → Create new release**.
 
 Without the secrets the workflow still builds and verifies the bundle but labels it **`workearn-UNSIGNED-aab`**: Play Console rejects unsigned bundles.
