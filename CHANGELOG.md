@@ -21,6 +21,6 @@ All notable changes to WorkEarn. Versions follow `versionName` in `app.json`; `a
 - EAS Build profiles (development, preview, production).
 
 ### Quality
-- 129 automated tests (calculation engine, intervals and rounding, weekend / holiday bonuses, breaks, midnight and DST, tips and extras,
+- 144 automated tests (calculation engine, intervals and rounding, weekend / holiday bonuses, breaks, midnight and DST, tips and extras,
   shift editing, SQLite persistence and restart recovery, statistics, CSV, i18n parity, signing plugin, UI integration on a real database).
 - TypeScript strict and ESLint clean.
