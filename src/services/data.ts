@@ -1,15 +1,29 @@
 /** Whole-database operations: reset and export queries. */
 
 import type { ExportShift } from '@/core/csv';
+import { builtInHolidays } from '@/core/holidays';
 import { ensureBuiltInHolidays } from '@/db/holidays';
 import { listEmployers } from '@/db/employers';
 import { listShifts } from '@/db/shifts';
 import type { Db, DbExecutor } from '@/db/types';
 import type { HolidayRegion } from '@/core/holidays';
 
-/** Seed the built-in holidays for a window of years around "now". */
+/**
+ * Seed the built-in holidays for a window of years around "now". Cheap on every launch: when all expected
+ * rows already exist (users can disable built-in holidays but never delete them) nothing is written.
+ */
 export async function seedHolidays(db: DbExecutor, region: HolidayRegion, nowYear: number): Promise<void> {
-  await ensureBuiltInHolidays(db, region, nowYear - 2, nowYear + 5);
+  if (region === 'NONE') return;
+  const from = nowYear - 2;
+  const to = nowYear + 5;
+  let expected = 0;
+  for (let year = from; year <= to; year++) expected += builtInHolidays(region, year).length;
+  const row = await db.get<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM holidays WHERE is_custom = 0 AND region = ? AND date >= ? AND date <= ?',
+    [region, `${from}-01-01`, `${to}-12-31`],
+  );
+  if ((row?.n ?? 0) >= expected) return;
+  await ensureBuiltInHolidays(db, region, from, to);
 }
 
 /** Permanently delete everything the app stores, including settings. */

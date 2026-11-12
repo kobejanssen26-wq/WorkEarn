@@ -4,6 +4,7 @@ import { LATEST_SCHEMA_VERSION, getSchemaVersion, migrate } from '@/db/migration
 import { DEFAULT_SETTINGS, loadSettings, saveSetting } from '@/db/settings';
 import { getActiveShift } from '@/db/shifts';
 import { startShift, stopShift } from '@/services/shifts';
+import { seedHolidays } from '@/services/data';
 import { HOUR, T0, at, makeEmployer, openTestDb, rule } from './helpers/db';
 
 describe('schema and migrations', () => {
@@ -202,5 +203,16 @@ describe('holidays', () => {
     expect(dates.has('2026-04-27')).toBe(true); // Koningsdag
     expect(dates.has('2026-07-21')).toBe(false); // Belgian National Day gone
     expect(dates.has('2026-09-27')).toBe(true); // custom holiday survives
+  });
+
+  it('seeds the holiday window once and skips all writes on later launches', async () => {
+    const db = await openTestDb();
+    await seedHolidays(db, 'BE', 2026);
+    expect((await listHolidays(db, '2024-01-01', '2031-12-31')).length).toBe(80); // 8 years x 10 holidays
+    const run = jest.spyOn(db, 'run');
+    await seedHolidays(db, 'BE', 2026);
+    expect(run).not.toHaveBeenCalled();
+    await seedHolidays(db, 'BE', 2027); // window moved forward: only the missing year is added
+    expect((await listHolidays(db, '2025-01-01', '2032-12-31')).length).toBe(80);
   });
 });
