@@ -6,6 +6,8 @@ export interface ShiftRecord {
   id: number;
   employerId: number;
   payRuleId: number;
+  /** Currency of the pay rule the shift was recorded with. */
+  currency: string;
   startAt: number;
   /** null while the shift is running. */
   endAt: number | null;
@@ -50,6 +52,7 @@ interface ShiftRow {
   id: number;
   employer_id: number;
   pay_rule_id: number;
+  currency: string;
   start_at: number;
   end_at: number | null;
   local_date: string;
@@ -88,6 +91,7 @@ function toRecord(r: ShiftRow): ShiftRecord {
     id: r.id,
     employerId: r.employer_id,
     payRuleId: r.pay_rule_id,
+    currency: r.currency,
     startAt: r.start_at,
     endAt: r.end_at,
     localDate: r.local_date,
@@ -122,8 +126,10 @@ const toAdjustment = (r: AdjustmentRow): StoredAdjustment => ({
   createdAt: r.created_at,
 });
 
+const SHIFT_SELECT = 'SELECT s.*, p.currency AS currency FROM shifts s JOIN pay_rules p ON p.id = s.pay_rule_id';
+
 export async function getShiftRecord(db: DbExecutor, id: number): Promise<ShiftRecord | null> {
-  const row = await db.get<ShiftRow>('SELECT * FROM shifts WHERE id = ?', [id]);
+  const row = await db.get<ShiftRow>(`${SHIFT_SELECT} WHERE s.id = ?`, [id]);
   return row ? toRecord(row) : null;
 }
 
@@ -155,22 +161,23 @@ export interface ShiftFilter {
 export async function listShifts(db: DbExecutor, filter: ShiftFilter = {}): Promise<ShiftRecord[]> {
   const where: string[] = [];
   const params: SqlValue[] = [];
-  if (!filter.includeActive) where.push('end_at IS NOT NULL');
+  if (!filter.includeActive) where.push('s.end_at IS NOT NULL');
   if (filter.fromDate) {
-    where.push('local_date >= ?');
+    where.push('s.local_date >= ?');
     params.push(filter.fromDate);
   }
   if (filter.toDate) {
-    where.push('local_date <= ?');
+    where.push('s.local_date <= ?');
     params.push(filter.toDate);
   }
   if (filter.employerId !== undefined && filter.employerId !== null) {
-    where.push('employer_id = ?');
+    where.push('s.employer_id = ?');
     params.push(filter.employerId);
   }
-  const sql = `SELECT * FROM shifts ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY start_at ${
-    filter.order === 'asc' ? 'ASC' : 'DESC'
-  }, id ${filter.order === 'asc' ? 'ASC' : 'DESC'} ${filter.limit ? `LIMIT ${Math.floor(filter.limit)}` : ''}`;
+  const dir = filter.order === 'asc' ? 'ASC' : 'DESC';
+  const sql = `${SHIFT_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY s.start_at ${dir}, s.id ${dir} ${
+    filter.limit ? `LIMIT ${Math.floor(filter.limit)}` : ''
+  }`;
   const rows = await db.all<ShiftRow>(sql, params);
   return rows.map(toRecord);
 }
@@ -308,12 +315,13 @@ export interface RangeTotals {
   shifts: number;
 }
 
-/** Totals of finished shifts whose local start date lies in [fromDate, toDate]. */
-export async function getTotalsForRange(db: DbExecutor, fromDate: string, toDate: string): Promise<RangeTotals> {
+/** Totals of finished shifts whose local start date lies in [fromDate, toDate], optionally for one currency only. */
+export async function getTotalsForRange(db: DbExecutor, fromDate: string, toDate: string, currency?: string): Promise<RangeTotals> {
   const row = await db.get<{ cents: number; ms: number; n: number }>(
-    `SELECT COALESCE(SUM(total_cents), 0) AS cents, COALESCE(SUM(rounded_ms), 0) AS ms, COUNT(*) AS n
-     FROM shifts WHERE end_at IS NOT NULL AND local_date >= ? AND local_date <= ?`,
-    [fromDate, toDate],
+    `SELECT COALESCE(SUM(s.total_cents), 0) AS cents, COALESCE(SUM(s.rounded_ms), 0) AS ms, COUNT(*) AS n
+     FROM shifts s JOIN pay_rules p ON p.id = s.pay_rule_id
+     WHERE s.end_at IS NOT NULL AND s.local_date >= ? AND s.local_date <= ? ${currency ? 'AND p.currency = ?' : ''}`,
+    currency ? [fromDate, toDate, currency] : [fromDate, toDate],
   );
   return { cents: row?.cents ?? 0, ms: row?.ms ?? 0, shifts: row?.n ?? 0 };
 }
