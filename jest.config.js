@@ -9,6 +9,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  setupFilesAfterEnv: ['<rootDir>/tests/setup/ui-mocks.tsx'],
   clearMocks: true,
   cacheDirectory: '<rootDir>/.jest-cache',
 };
