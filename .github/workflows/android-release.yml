@@ -5,16 +5,17 @@ name: Android release bundle (AAB)
 # without them the bundle is UNSIGNED (it cannot be uploaded to Google Play) and the artifact is named accordingly.
 #
 # Secrets (Settings > Secrets and variables > Actions):
-#   ANDROID_UPLOAD_KEYSTORE_BASE64   base64 of the upload keystore (.jks)
-#   ANDROID_UPLOAD_STORE_PASSWORD
-#   ANDROID_UPLOAD_KEY_ALIAS
-#   ANDROID_UPLOAD_KEY_PASSWORD
-# See docs/ANDROID_RELEASE.md.
+#   ANDROID_UPLOAD_KEYSTORE_BASE64   required  base64 of the upload keystore
+#   ANDROID_UPLOAD_STORE_PASSWORD    required  keystore password
+#   ANDROID_UPLOAD_KEY_ALIAS         optional  default: upload
+#   ANDROID_UPLOAD_KEY_PASSWORD      optional  default: the keystore password
+# See docs/ANDROID_RELEASE.md. The signing path itself is proven without any secret by the "Signing and device
+# self-test" workflow (.github/workflows/device-check.yml).
 
 on:
   workflow_dispatch:
   push:
-    branches: ['claude/**']
+    branches: ['claude/**', 'main']
     tags: ['v*']
     paths-ignore: ['**/*.md', 'docs/**', 'store/**']
 
@@ -46,9 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     env:
-      WORKEARN_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
-      WORKEARN_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
-      WORKEARN_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
       CI: 'true'
       EXPO_NO_TELEMETRY: '1'
     steps:
@@ -80,11 +78,31 @@ jobs:
         id: signing
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          RAW_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          RAW_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          RAW_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ] && [ -n "$WORKEARN_UPLOAD_STORE_PASSWORD" ] && [ -n "$WORKEARN_UPLOAD_KEY_ALIAS" ] && [ -n "$WORKEARN_UPLOAD_KEY_PASSWORD" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$WORKEARN_UPLOAD_STORE_FILE"
+          set -euo pipefail
+          # Pasting often adds spaces or line breaks; none of these values may contain whitespace.
+          STORE_PASS=$(printf '%s' "$RAW_STORE_PASSWORD" | tr -d '[:space:]')
+          KEY_PASS=$(printf '%s' "$RAW_KEY_PASSWORD" | tr -d '[:space:]')
+          KEY_ALIAS=$(printf '%s' "$RAW_KEY_ALIAS" | tr -d '[:space:]')
+          KEY_ALIAS="${KEY_ALIAS:-upload}"
+          KEY_PASS="${KEY_PASS:-$STORE_PASS}"
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$STORE_PASS" ]; then
+            printf '%s' "$KEYSTORE_B64" | tr -d '[:space:]' | base64 -d > "$WORKEARN_UPLOAD_STORE_FILE"
+            # Fail early, with a readable message, if the secrets do not belong together.
+            if ! keytool -list -keystore "$WORKEARN_UPLOAD_STORE_FILE" -storepass "$STORE_PASS" -alias "$KEY_ALIAS" > "$RUNNER_TEMP/keytool-list.txt" 2>&1; then
+              echo "::error::The upload keystore could not be opened. Check the secret ANDROID_UPLOAD_KEYSTORE_BASE64 (the whole text, nothing added or missing) and ANDROID_UPLOAD_STORE_PASSWORD. If you set ANDROID_UPLOAD_KEY_ALIAS, it must match the alias in the keystore (default: upload)."
+              exit 1
+            fi
+            {
+              echo "WORKEARN_UPLOAD_STORE_PASSWORD=$STORE_PASS"
+              echo "WORKEARN_UPLOAD_KEY_ALIAS=$KEY_ALIAS"
+              echo "WORKEARN_UPLOAD_KEY_PASSWORD=$KEY_PASS"
+            } >> "$GITHUB_ENV"
             echo "signed=true" >> "$GITHUB_OUTPUT"
-            echo "Upload keystore decoded."
+            echo "Upload keystore decoded and opened."
           else
             echo "signed=false" >> "$GITHUB_OUTPUT"
             echo "::warning::No upload keystore secrets configured - the bundle will be UNSIGNED and cannot be uploaded to Google Play."
@@ -143,6 +161,21 @@ jobs:
             echo "::error::Unexpected permissions in the bundle (update the privacy documents or remove the dependency):"
             printf '%s\n' "$UNEXPECTED"
             exit 1
+          fi
+          if [ "${{ steps.signing.outputs.signed }}" = "true" ]; then
+            # A bundle built with the upload key must really carry that signature, or Google Play will refuse it.
+            jarsigner -verify "$AAB" > "$RUNNER_TEMP/jarsigner.txt" 2>&1 || true
+            if ! grep -q "jar verified" "$RUNNER_TEMP/jarsigner.txt"; then
+              cat "$RUNNER_TEMP/jarsigner.txt"
+              echo "::error::The bundle is not signed with the upload key."
+              exit 1
+            fi
+            keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/signer.txt" 2>&1 || true
+            {
+              echo
+              echo "## Upload certificate that signed this bundle (compare with Play Console > App signing)"
+              grep -E "Owner:|SHA256:|Valid from:" "$RUNNER_TEMP/signer.txt" || true
+            } | tee -a aab-report.txt
           fi
           mkdir -p dist-aab
           if [ "${{ steps.signing.outputs.signed }}" = "true" ]; then

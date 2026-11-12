@@ -1,0 +1,154 @@
+name: Signing and device self-test
+
+# Manual only; uses NO real secret and publishes nothing. It proves two things before you rely on them:
+#
+#   1. Signing: the release build is signed with an upload key exactly the way the release workflow does it
+#      (a throwaway key is created on the runner and discarded with it) and both signatures verify.
+#   2. Device: the signed release APK installs and starts on an Android 14 emulator, shows the first-run screen,
+#      opens Calendar / History / Statistics, survives a restart and logs no crash.
+#
+# Kept afterwards (7 days): screenshots, UI dumps and the log of the emulator run. The throwaway-signed APK is
+# only passed to the emulator job and expires after one day.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: device-check-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-sign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      CI: 'true'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Create a THROWAWAY upload key (same type as the real one; random password; discarded with the runner)
+        run: |
+          set -euo pipefail
+          PASS=$(openssl rand -hex 20)
+          echo "::add-mask::$PASS"
+          keytool -genkeypair -storetype PKCS12 -keystore "$RUNNER_TEMP/throwaway.p12" -alias upload \
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=WorkEarn self-test throwaway key" \
+            -storepass "$PASS" -keypass "$PASS"
+          # Same path as the release workflow: secret text -> whitespace stripped -> base64 -d -> keystore file
+          base64 -w0 "$RUNNER_TEMP/throwaway.p12" > "$RUNNER_TEMP/throwaway.b64"
+          tr -d '[:space:]' < "$RUNNER_TEMP/throwaway.b64" | base64 -d > "$RUNNER_TEMP/upload-keystore.jks"
+          {
+            echo "WORKEARN_UPLOAD_STORE_FILE=$RUNNER_TEMP/upload-keystore.jks"
+            echo "WORKEARN_UPLOAD_STORE_PASSWORD=$PASS"
+            echo "WORKEARN_UPLOAD_KEY_ALIAS=upload"
+            echo "WORKEARN_UPLOAD_KEY_PASSWORD=$PASS"
+          } >> "$GITHUB_ENV"
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Generate the native Android project (expo prebuild)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Build the signed release bundle (AAB) and APK
+        working-directory: android
+        run: ./gradlew :app:bundleRelease :app:assembleRelease --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=768m"
+
+      - name: Verify that both files are signed with the throwaway key
+        run: |
+          set -euo pipefail
+          AAB=android/app/build/outputs/bundle/release/app-release.aab
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          test -f "$AAB"
+          test -f "$APK"
+
+          jarsigner -verify "$AAB" > "$RUNNER_TEMP/aab-signature.txt" 2>&1 || true
+          cat "$RUNNER_TEMP/aab-signature.txt"
+          grep -q "jar verified" "$RUNNER_TEMP/aab-signature.txt"
+
+          keytool -list -v -keystore "$WORKEARN_UPLOAD_STORE_FILE" -storepass "$WORKEARN_UPLOAD_STORE_PASSWORD" -alias upload > "$RUNNER_TEMP/key.txt"
+          keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/aab-cert.txt"
+          EXPECTED=$(grep -m1 'SHA256:' "$RUNNER_TEMP/key.txt" | sed 's/.*SHA256: *//')
+          ACTUAL=$(grep -m1 'SHA256:' "$RUNNER_TEMP/aab-cert.txt" | sed 's/.*SHA256: *//')
+          echo "Throwaway key SHA-256: $EXPECTED"
+          echo "Bundle signer  SHA-256: $ACTUAL"
+          test -n "$EXPECTED"
+          test "$EXPECTED" = "$ACTUAL"
+
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee "$RUNNER_TEMP/apk-signature.txt"
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" "$RUNNER_TEMP/apk-signature.txt"
+          APK_CERT=$(grep -m1 'certificate SHA-256 digest' "$RUNNER_TEMP/apk-signature.txt" | sed 's/.*: *//' | tr -d ':' | tr 'a-f' 'A-F')
+          EXPECTED_PLAIN=$(printf '%s' "$EXPECTED" | tr -d ':')
+          echo "APK signer SHA-256: $APK_CERT"
+          test "$APK_CERT" = "$EXPECTED_PLAIN"
+          echo "SIGNING SELF-TEST OK: the AAB and the APK are signed with the upload key supplied through the environment."
+
+      - name: Hand the APK to the emulator job
+        uses: actions/upload-artifact@v4
+        with:
+          name: selftest-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 1
+
+  emulator:
+    needs: build-and-sign
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: selftest-apk
+          path: apk
+
+      - name: Enable KVM (hardware acceleration for the emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Boot an Android 14 emulator and run the smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: bash scripts/ci/emulator-smoke.sh apk/app-release.apk smoke-out
+
+      - name: Keep the evidence (screenshots, UI dumps, log)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: device-check-evidence
+          path: smoke-out/
+          if-no-files-found: warn
+          retention-days: 7
