@@ -80,8 +80,8 @@ export default function CalendarScreen() {
       subtitle={fmt.monthYearCivil(month)}
       right={
         <>
-          <IconButton icon="chevron-left" label="‹" onPress={() => goMonth(-1)} />
-          <IconButton icon="chevron-right" label="›" onPress={() => goMonth(1)} />
+          <IconButton icon="chevron-left" label={t('calendar.previousMonth')} onPress={() => goMonth(-1)} />
+          <IconButton icon="chevron-right" label={t('calendar.nextMonth')} onPress={() => goMonth(1)} />
         </>
       }>
       <ChipRow>

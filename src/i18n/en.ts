@@ -105,6 +105,7 @@ export const en = {
   'employers.empty.title': 'No employers yet',
   'employers.empty.body': 'Add an employer with an hourly wage to start tracking shifts.',
   'employers.archived': 'Archived',
+  'employers.holidayShort': 'Hol',
   'employers.rateSummary': '{rate} per hour',
 
   'employer.titleNew': 'New employer',
@@ -225,6 +226,8 @@ export const en = {
   'calendar.noShifts': 'No shifts on this day.',
   'calendar.addShift': 'Add shift on this day',
   'calendar.today': 'Today',
+  'calendar.previousMonth': 'Previous month',
+  'calendar.nextMonth': 'Next month',
   'calendar.dayTotal': 'Day total',
 
   'stats.title': 'Statistics',
@@ -337,6 +340,8 @@ export const en = {
   'holidays.custom': 'Custom holidays',
   'holidays.addCustom': 'Add custom holiday',
   'holidays.empty': 'No holidays in this year.',
+  'holidays.previousYear': 'Previous year',
+  'holidays.nextYear': 'Next year',
   'holidays.year': 'Year',
   'holidays.namePlaceholder': 'e.g. Company day',
   'holiday.new_year': 'New Year’s Day',

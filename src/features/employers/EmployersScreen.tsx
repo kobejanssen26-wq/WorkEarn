@@ -21,7 +21,11 @@ export default function EmployersScreen() {
   const archived = employers.filter((e) => e.isArchived);
 
   const card = (e: EmployerWithRule) => {
-    const bonuses = premiumSummary(e.rule, (units) => `${fmt.rate(units, e.currency)}${t('common.perHour')}`);
+    const bonuses = premiumSummary(e.rule, (units) => `${fmt.rate(units, e.currency)}${t('common.perHour')}`, {
+      sat: fmt.weekdayShort(5),
+      sun: fmt.weekdayShort(6),
+      hol: t('employers.holidayShort'),
+    });
     const extras = e.rule.customBonuses.length + e.rule.fixedBonuses.length;
     return (
       <Card key={e.id} onPress={() => router.push(`/employers/${e.id}`)} accessibilityLabel={e.name}>

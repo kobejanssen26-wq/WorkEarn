@@ -55,11 +55,11 @@ export default function HolidaysScreen() {
       <SectionTitle
         right={
           <View style={styles.yearNav}>
-            <IconButton icon="chevron-left" label={`${t('holidays.year')} −`} onPress={() => setYear((y) => y - 1)} size={18} />
+            <IconButton icon="chevron-left" label={t('holidays.previousYear')} onPress={() => setYear((y) => y - 1)} size={18} />
             <Text variant="bodyStrong" tabular>
               {year}
             </Text>
-            <IconButton icon="chevron-right" label={`${t('holidays.year')} +`} onPress={() => setYear((y) => y + 1)} size={18} />
+            <IconButton icon="chevron-right" label={t('holidays.nextYear')} onPress={() => setYear((y) => y + 1)} size={18} />
           </View>
         }>
         {t('settings.holidays')}

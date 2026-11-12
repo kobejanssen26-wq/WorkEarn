@@ -203,11 +203,15 @@ export function formToPayRule(form: EmployerForm): FormResult {
 }
 
 /** Short human summary of the premiums of a pay rule, e.g. ["Sat +50%", "Sun +€2.00/h"]. */
-export function premiumSummary(rule: PayRule, fmtRate: (units: number) => string): string[] {
+export function premiumSummary(
+  rule: PayRule,
+  fmtRate: (units: number) => string,
+  labels: { sat: string; sun: string; hol: string } = { sat: 'Sat', sun: 'Sun', hol: 'Hol' },
+): string[] {
   const part = (label: string, p: Premium | null) => {
     if (!p) return null;
     const amount = p.valueType === 'percent' ? `${bpToPercentString(p.value)}%` : fmtRate(p.value);
     return `${label} ${p.mode === 'add' ? '+' : '='}${amount}`;
   };
-  return [part('Sat', rule.saturday), part('Sun', rule.sunday), part('Hol', rule.holiday)].filter((x): x is string => x !== null);
+  return [part(labels.sat, rule.saturday), part(labels.sun, rule.sunday), part(labels.hol, rule.holiday)].filter((x): x is string => x !== null);
 }

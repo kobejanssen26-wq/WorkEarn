@@ -107,6 +107,7 @@ export const nl: Record<TKey, string> = {
   'employers.empty.title': 'Nog geen werkgevers',
   'employers.empty.body': 'Voeg een werkgever met een uurloon toe om shifts bij te houden.',
   'employers.archived': 'Gearchiveerd',
+  'employers.holidayShort': 'Feest',
   'employers.rateSummary': '{rate} per uur',
 
   'employer.titleNew': 'Nieuwe werkgever',
@@ -227,6 +228,8 @@ export const nl: Record<TKey, string> = {
   'calendar.noShifts': 'Geen shifts op deze dag.',
   'calendar.addShift': 'Shift toevoegen op deze dag',
   'calendar.today': 'Vandaag',
+  'calendar.previousMonth': 'Vorige maand',
+  'calendar.nextMonth': 'Volgende maand',
   'calendar.dayTotal': 'Dagtotaal',
 
   'stats.title': 'Statistieken',
@@ -339,6 +342,8 @@ export const nl: Record<TKey, string> = {
   'holidays.custom': 'Eigen feestdagen',
   'holidays.addCustom': 'Eigen feestdag toevoegen',
   'holidays.empty': 'Geen feestdagen in dit jaar.',
+  'holidays.previousYear': 'Vorig jaar',
+  'holidays.nextYear': 'Volgend jaar',
   'holidays.year': 'Jaar',
   'holidays.namePlaceholder': 'bv. Bedrijfsdag',
   'holiday.new_year': 'Nieuwjaar',

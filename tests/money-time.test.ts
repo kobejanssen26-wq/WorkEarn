@@ -12,6 +12,8 @@ import {
   weekdayOfDateString,
 } from '@/core/time';
 import { builtInHolidays, easterSunday } from '@/core/holidays';
+import { createFormatter } from '@/i18n/format';
+import { niceMax } from '@/ui/charts';
 
 describe('exact money helpers', () => {
   it('parses decimals without floating point', () => {
@@ -141,5 +143,26 @@ describe('public holidays', () => {
     expect(builtInHolidays('FR', 2026).find((h) => h.key === 'victory_1945')?.date).toBe('2026-05-08');
     expect(builtInHolidays('LU', 2026).find((h) => h.key === 'national_day_lu')?.date).toBe('2026-06-23');
     expect(builtInHolidays('NONE', 2026)).toEqual([]);
+  });
+});
+
+describe('compact money and chart axis helpers', () => {
+  const en = createFormatter('en-GB', 'auto');
+  const nl = createFormatter('nl-BE', 'auto');
+  it('keeps small amounts precise and large ones short', () => {
+    expect(en.compactMoney(550, 'EUR')).toBe('€5.5');
+    expect(en.compactMoney(600, 'EUR')).toBe('€6');
+    expect(en.compactMoney(10_050, 'EUR')).toBe('€101'); // no noisy decimals above 10
+    expect(en.compactMoney(212_000, 'EUR')).toBe('€2.1k');
+    expect(en.compactMoney(-550, 'EUR')).toBe('-€5.5');
+    expect(nl.compactMoney(550, 'EUR')).toBe('€5,5');
+  });
+  it('rounds chart maxima to readable axis values', () => {
+    expect(niceMax(0)).toBe(1);
+    expect(niceMax(7)).toBe(10);
+    expect(niceMax(130)).toBe(200);
+    expect(niceMax(240)).toBe(250);
+    expect(niceMax(420)).toBe(500);
+    expect(niceMax(35_686)).toBe(50_000);
   });
 });
