@@ -56,9 +56,9 @@ export const lightPalette: Palette = {
   warning: '#B45309',
   warningSoft: '#FEF3C7',
   overlay: 'rgba(8, 16, 12, 0.45)',
-  hero: ['#065F46', '#10B981'],
+  hero: ['#064E3B', '#077C59'],
   heroText: '#FFFFFF',
-  heroTextMuted: 'rgba(255,255,255,0.78)',
+  heroTextMuted: 'rgba(255,255,255,0.9)',
   tabBar: '#FFFFFF',
 };
 
@@ -82,9 +82,9 @@ export const darkPalette: Palette = {
   warning: '#FBBF24',
   warningSoft: '#3A2F12',
   overlay: 'rgba(0, 0, 0, 0.62)',
-  hero: ['#064E3B', '#0B8F66'],
+  hero: ['#053D2E', '#06684B'],
   heroText: '#FFFFFF',
-  heroTextMuted: 'rgba(255,255,255,0.74)',
+  heroTextMuted: 'rgba(255,255,255,0.9)',
   tabBar: '#13161A',
 };
 
