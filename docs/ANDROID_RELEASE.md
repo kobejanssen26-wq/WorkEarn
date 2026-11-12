@@ -44,9 +44,12 @@ The release build is *never* signed with the debug key (`plugins/withReleaseSign
 ## Route 2 — EAS Build
 
 ```bash
-npx eas-cli login                       # or set EXPO_TOKEN
+npx eas-cli login                       # or set EXPO_TOKEN (create one at expo.dev -> Account settings -> Access tokens)
+npx eas-cli init                        # once: creates the EAS project and writes extra.eas.projectId into app.json
 npx eas-cli build --platform android --profile production
 ```
+
+Without `eas login` / `EXPO_TOKEN` the command stops with: *"An Expo user account is required to proceed."*
 
 EAS creates and stores the keystore for you the first time (interactive run required for credential generation). Download the `.aab` from the
 build page. `eas.json` uses `appVersionSource: local`, so bump `android.versionCode` in `app.json` before every upload.
