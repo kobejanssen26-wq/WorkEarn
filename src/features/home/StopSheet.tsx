@@ -54,7 +54,8 @@ export function StopSheet({ visible, stopAt, active, holidays, hideCents, onConf
         </Text>
       ) : null}
       <Divider />
-      {row(t('stop.estimated'), money(result.estimate.totalCents))}
+      {row(t('stop.estimated'), money(result.estimate.timeCents))}
+      {result.final.timeCents !== result.estimate.timeCents ? row(t('stop.countedPay'), money(result.final.timeCents)) : null}
       {result.final.fixedBonusCents + result.final.adjustmentsCents !== 0
         ? row(t('home.bonuses'), fmt.money(result.final.fixedBonusCents + result.final.adjustmentsCents, currency, { signDisplay: 'always', hideCents }))
         : null}

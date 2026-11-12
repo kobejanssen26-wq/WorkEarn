@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { dailyTotals } from '@/core/stats';
 import type { StatShift } from '@/core/stats';
@@ -23,7 +23,7 @@ import type { TKey } from '@/i18n';
 import { radius, spacing } from '@/theme/tokens';
 import { Button } from '@/ui/Button';
 import { Screen } from '@/ui/Screen';
-import { Card, Chip, IconButton } from '@/ui/Surface';
+import { Card, Chip, ChipRow, IconButton } from '@/ui/Surface';
 import { Text } from '@/ui/Text';
 
 const WEEKS = 6;
@@ -84,7 +84,7 @@ export default function CalendarScreen() {
           <IconButton icon="chevron-right" label="›" onPress={() => goMonth(1)} />
         </>
       }>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      <ChipRow>
         <Chip
           label={t('calendar.today')}
           icon="crosshair"
@@ -97,7 +97,7 @@ export default function CalendarScreen() {
         {(data?.employers ?? []).map((e) => (
           <Chip key={e.id} label={e.name} color={e.color} selected={employerFilter === e.id} onPress={() => setEmployerFilter(e.id)} />
         ))}
-      </ScrollView>
+      </ChipRow>
       <CurrencyChips currencies={currencies} value={currency} onChange={setCurrency} />
 
       <Card padded={false}>
@@ -194,7 +194,6 @@ export default function CalendarScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  chips: { gap: spacing.sm, paddingRight: spacing.xl },
   grid: { padding: spacing.sm },
   weekRow: { flexDirection: 'row' },
   cellHead: { width: `${100 / 7}%`, alignItems: 'center', paddingVertical: spacing.sm },

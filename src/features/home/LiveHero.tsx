@@ -90,7 +90,7 @@ export function LiveHero({
 
   return (
     <View style={[styles.hero, { borderRadius: radius.xl }]}>
-      <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
         <Defs>
           <LinearGradient id="heroGradient" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0" stopColor={colors.hero[0]} />

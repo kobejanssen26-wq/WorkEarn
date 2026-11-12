@@ -23,7 +23,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabelStyle: { fontFamily: 'Inter_600SemiBold', fontSize: 11, marginTop: 2 },
-        tabBarStyle: { backgroundColor: colors.tabBar, borderTopColor: colors.border, height: 60 + insets.bottom, paddingBottom: insets.bottom + 6, paddingTop: 8 },
+        tabBarStyle: { backgroundColor: colors.tabBar, borderTopColor: colors.border, height: 68 + insets.bottom, paddingBottom: insets.bottom + 8, paddingTop: 6 },
         sceneStyle: { backgroundColor: colors.bg },
       }}>
       {TABS.map((tab) => (

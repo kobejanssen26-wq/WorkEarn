@@ -85,6 +85,7 @@ export const en = {
   'stop.unpaidBreaks': 'Unpaid breaks',
   'stop.counted': 'Counted time',
   'stop.estimated': 'Live estimate',
+  'stop.countedPay': 'Pay for counted time',
   'stop.final': 'Final earnings',
   'stop.rounding': 'Rounded {mode} to {interval}',
   'stop.confirm': 'Stop and save',

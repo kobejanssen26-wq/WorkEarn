@@ -58,3 +58,6 @@ Thumbs.db
 coverage/
 .jest-cache/
 .tmp/
+
+# Generated for the web preview / store screenshots
+/public/

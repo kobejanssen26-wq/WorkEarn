@@ -111,7 +111,7 @@ describe('Home screen with a real SQLite database', () => {
     await tick(at('2026-03-10', '09:29'));
     expect(screen.getByLabelText('Live earnings: €5.80')).toBeTruthy(); // live: exact
     await fireEvent.press(screen.getByLabelText('Stop'));
-    expect(await screen.findByText('€3.00')).toBeTruthy(); // final: 15 minutes, rounded down
+    expect((await screen.findAllByText('€3.00')).length).toBe(2); // pay for the counted 15 minutes + final earnings
     await fireEvent.press(screen.getByLabelText('Stop and save'));
     await waitFor(async () => expect((await listShifts(db))[0]?.totalCents).toBe(300));
       });

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 
@@ -55,6 +55,20 @@ export function Chip({ label, selected, onPress, color, icon }: { label: string;
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+/** Horizontally scrolling row of chips that runs to the screen edges while aligning with the page padding. */
+export function ChipRow({ children, label }: { children: ReactNode; label?: string }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      accessibilityLabel={label}
+      style={styles.chipRow}
+      contentContainerStyle={styles.chipRowContent}>
+      {children}
+    </ScrollView>
   );
 }
 
@@ -156,6 +170,8 @@ export function EmptyState({ icon, title, body, action }: { icon: IconName; titl
 const styles = StyleSheet.create({
   card: { borderRadius: radius.lg, borderWidth: 1 },
   iconButton: { width: MIN_TOUCH - 4, height: MIN_TOUCH - 4, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  chipRow: { marginHorizontal: -spacing.xl, flexGrow: 0 },
+  chipRowContent: { paddingHorizontal: spacing.xl, gap: spacing.sm },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, minHeight: 40, borderRadius: radius.pill, borderWidth: 1.5 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   pill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, alignSelf: 'flex-start' },

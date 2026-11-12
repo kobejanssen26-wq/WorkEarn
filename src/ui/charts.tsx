@@ -86,7 +86,7 @@ export function BarChart({ data, format, height = 190, selectedKey, onSelect }: 
             return (
               <G key={d.key}>
                 <Bar x={x} width={barW} baseY={baseY} targetHeight={Math.max(d.value > 0 ? 3 : 0, h)} progress={progress} color={colors.accent} opacity={opacity} />
-                {i % labelEvery === 0 || isSelected ? (
+                {(data.length - 1 - i) % labelEvery === 0 || isSelected ? (
                   <SvgText x={left + slot * i + slot / 2} y={height - 8} fontSize={10} fill={isSelected ? colors.text : colors.textTertiary} textAnchor="middle" fontFamily="Inter_500Medium">
                     {d.label}
                   </SvgText>

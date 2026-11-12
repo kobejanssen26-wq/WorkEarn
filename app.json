@@ -52,6 +52,10 @@
         }
       ],
       "./plugins/withReleaseSigning"
-    ]
+    ],
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
   }
 }

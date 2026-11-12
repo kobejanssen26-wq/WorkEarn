@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-
-import { spacing } from '@/theme/tokens';
-import { Chip } from '@/ui/Surface';
+import { Chip, ChipRow } from '@/ui/Surface';
 
 /** Picks which currency to show when data contains several (amounts in different currencies are never added together). */
 export function useCurrencyChoice(currencies: readonly string[], preferred: string) {
@@ -14,12 +11,10 @@ export function useCurrencyChoice(currencies: readonly string[], preferred: stri
 export function CurrencyChips({ currencies, value, onChange }: { currencies: readonly string[]; value: string; onChange: (c: string) => void }) {
   if (currencies.length < 2) return null;
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+    <ChipRow>
       {currencies.map((c) => (
         <Chip key={c} label={c} selected={c === value} onPress={() => onChange(c)} />
       ))}
-    </ScrollView>
+    </ChipRow>
   );
 }
-
-const styles = StyleSheet.create({ chips: { gap: spacing.sm } });

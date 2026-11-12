@@ -49,7 +49,8 @@ function Shell() {
   const { colors, isDark } = useTheme();
 
   useEffect(() => {
-    Appearance.setColorScheme(settings.theme === 'system' ? 'unspecified' : settings.theme);
+    // Not available on every platform (react-native-web has no override API); the in-app palette is applied either way.
+    if (typeof Appearance.setColorScheme === 'function') Appearance.setColorScheme(settings.theme === 'system' ? 'unspecified' : settings.theme);
   }, [settings.theme]);
 
   return (

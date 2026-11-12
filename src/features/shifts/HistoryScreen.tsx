@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { startOfMonthDateString } from '@/core/time';
 import { listEmployers } from '@/db/employers';
@@ -11,7 +11,7 @@ import { useI18n, useQuery } from '@/state/hooks';
 import { spacing } from '@/theme/tokens';
 import { Button } from '@/ui/Button';
 import { Screen } from '@/ui/Screen';
-import { Chip, EmptyState, IconButton, SectionTitle } from '@/ui/Surface';
+import { Chip, ChipRow, EmptyState, IconButton, SectionTitle } from '@/ui/Surface';
 import { Text } from '@/ui/Text';
 
 import { ShiftCard } from './ShiftCard';
@@ -55,12 +55,12 @@ export default function HistoryScreen() {
   return (
     <Screen title={t('history.title')} subtitle={tp('history.shiftCount', total)} right={<IconButton icon="plus" label={t('history.addShift')} tone="accent" onPress={() => router.push(`/shift/new${employerFilter ? `?employerId=${employerFilter}` : ''}`)} />}>
       {(data?.employers.length ?? 0) > 1 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        <ChipRow>
           <Chip label={t('common.all')} selected={employerFilter === null} onPress={() => setEmployerFilter(null)} />
           {(data?.employers ?? []).map((e: EmployerWithRule) => (
             <Chip key={e.id} label={e.name} color={e.color} selected={employerFilter === e.id} onPress={() => setEmployerFilter(e.id)} />
           ))}
-        </ScrollView>
+        </ChipRow>
       ) : null}
 
       {total === 0 ? (
@@ -91,7 +91,6 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  chips: { gap: spacing.sm, paddingRight: spacing.xl },
   section: { gap: 0 },
   list: { gap: spacing.md },
 });

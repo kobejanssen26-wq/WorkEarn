@@ -54,7 +54,7 @@ export function createFormatter(locale: string, timeFormat: TimeFormatSetting) {
     compactMoney: (cents: number, currency: string) => {
       const amount = Math.abs(cents) / 100;
       const trim = (x: number) => (Number.isInteger(x) ? String(x) : x.toFixed(1));
-      const body = amount >= 1000 ? `${trim(Math.round(amount / 100) / 10)}k` : trim(Math.round(amount * 10) / 10);
+      const body = amount >= 1000 ? `${trim(Math.round(amount / 100) / 10)}k` : amount >= 10 ? String(Math.round(amount)) : trim(Math.round(amount * 10) / 10);
       return `${cents < 0 ? '-' : ''}${currencySymbol(currency, locale)}${body.replace('.', decimalSep)}`;
     },
     /** Decimal separator of the locale, used to pre-fill number inputs. */

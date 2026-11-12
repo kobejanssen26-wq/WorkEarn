@@ -87,6 +87,7 @@ export const nl: Record<TKey, string> = {
   'stop.unpaidBreaks': 'Onbetaalde pauzes',
   'stop.counted': 'Getelde tijd',
   'stop.estimated': 'Live schatting',
+  'stop.countedPay': 'Loon voor getelde tijd',
   'stop.final': 'Definitieve verdienste',
   'stop.rounding': 'Afgerond {mode} op {interval}',
   'stop.confirm': 'Stoppen en opslaan',

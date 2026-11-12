@@ -2,7 +2,7 @@ import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { parseDecimal } from '@/core/money';
 import { setActiveShiftStartLocal } from '@/features/home/startTime';
@@ -13,7 +13,7 @@ import { addAdjustment, discardActiveShift, pauseShift, resumeShift, setActiveSh
 import { Button } from '@/ui/Button';
 import { Field, Segmented, TextField } from '@/ui/Fields';
 import { Screen } from '@/ui/Screen';
-import { Card, Chip, EmptyState, IconButton, Row } from '@/ui/Surface';
+import { Card, Chip, ChipRow, EmptyState, IconButton, Row } from '@/ui/Surface';
 import { Text } from '@/ui/Text';
 
 import { LiveHero, TotalsRow, useLiveCalc } from './LiveHero';
@@ -160,7 +160,7 @@ export default function HomeScreen() {
         </Card>
       ) : (
         <>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} accessibilityLabel={t('home.selectEmployer')}>
+          <ChipRow label={t('home.selectEmployer')}>
             {(active && !employers.some((e) => e.id === active.shift.employerId) && active.employer ? [active.employer, ...employers] : employers).map((e) => (
               <Chip
                 key={e.id}
@@ -173,7 +173,7 @@ export default function HomeScreen() {
               />
             ))}
             <Chip label={t('home.manageEmployers')} icon="settings" onPress={() => router.push('/employers')} />
-          </ScrollView>
+          </ChipRow>
 
           <LiveHero
             active={active}
@@ -247,7 +247,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  chips: { gap: spacing.sm, paddingRight: spacing.xl },
   warning: { borderRadius: 14, padding: spacing.md },
   actionsCard: { overflow: 'hidden' },
   actionsInner: { paddingHorizontal: spacing.lg },

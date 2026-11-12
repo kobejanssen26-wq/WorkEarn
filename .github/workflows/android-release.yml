@@ -124,10 +124,14 @@ jobs:
             echo "## Signature"
             jarsigner -verify -verbose:summary "$AAB" || true
           } | tee aab-report.txt
-          # Hard assertions: identity, version and target API required by Google Play
-          grep -q 'package="com.workearn.app"' "$RUNNER_TEMP/manifest.xml"
-          grep -q 'android:versionCode="1"' "$RUNNER_TEMP/manifest.xml"
-          grep -q 'android:versionName="1.0.0"' "$RUNNER_TEMP/manifest.xml"
+          # Hard assertions: identity, version and target API required by Google Play (expected values come from app.json)
+          EXPECT_CODE=$(node -p "require('./app.json').expo.android.versionCode")
+          EXPECT_NAME=$(node -p "require('./app.json').expo.version")
+          EXPECT_PKG=$(node -p "require('./app.json').expo.android.package")
+          echo "version=$EXPECT_NAME" >> "$GITHUB_OUTPUT"
+          grep -q "package=\"$EXPECT_PKG\"" "$RUNNER_TEMP/manifest.xml"
+          grep -q "android:versionCode=\"$EXPECT_CODE\"" "$RUNNER_TEMP/manifest.xml"
+          grep -q "android:versionName=\"$EXPECT_NAME\"" "$RUNNER_TEMP/manifest.xml"
           grep -q 'android:targetSdkVersion="36"' "$RUNNER_TEMP/manifest.xml"
           if grep -q '<uses-permission' "$RUNNER_TEMP/manifest.xml"; then
             echo "::warning::The bundle declares permissions:"; grep '<uses-permission' "$RUNNER_TEMP/manifest.xml"
@@ -136,9 +140,9 @@ jobs:
           fi
           mkdir -p dist-aab
           if [ "${{ steps.signing.outputs.signed }}" = "true" ]; then
-            cp "$AAB" dist-aab/WorkEarn-1.0.0-release.aab
+            cp "$AAB" dist-aab/WorkEarn-$EXPECT_NAME-release.aab
           else
-            cp "$AAB" dist-aab/WorkEarn-1.0.0-UNSIGNED.aab
+            cp "$AAB" dist-aab/WorkEarn-$EXPECT_NAME-UNSIGNED.aab
           fi
           cp aab-report.txt dist-aab/
           cat aab-report.txt >> "$GITHUB_STEP_SUMMARY"
