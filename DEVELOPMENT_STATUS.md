@@ -68,9 +68,23 @@ size, clipped chip rows and tab labels, noisy compact amounts, an incoherent sto
 | --- | --- |
 | **EAS Build** — `npx eas-cli build --platform android --profile production --non-interactive` (attempted 12 Nov 2026) | **Blocked — requires developer action.** Output: *"An Expo user account is required to proceed. Either log in with `eas login` or set the `EXPO_TOKEN` environment variable…"* then *"Error: build command failed."* (`api.expo.dev` and `expo.dev` are also denied by this environment's network policy.) |
 | **Local Gradle build in the agent sandbox** | **Blocked.** `dl.google.com` (Android SDK, NDK, Google Maven) is denied by the sandbox network policy (HTTP 403) and no Android SDK is installed. |
-| **GitHub Actions** (ubuntu-latest, JDK 21, Expo prebuild, Gradle `bundleRelease`) | **Completed — two successful runs.** |
+| **GitHub Actions** (ubuntu-latest, JDK 21, Expo prebuild, Gradle `bundleRelease`) | **Completed — successful runs, including a bundle signed with the developer's upload key (run #4).** |
 
-**Final bundle (run #2, commit `230e743`)**
+**Signed bundle for Google Play — the file to upload (run #4, commit `08d5698`, 12 Nov 2026)**
+
+- Run: <https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43281362145> (started manually; jobs `quality` and `build-aab` both **success**).
+- **Artifact: `workearn-release-aab`** (id 13974337166): <https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43281362145/artifacts/13974337166>
+  — a zip of 71,456,130 bytes (SHA-256 of the zip `5b45f86e4ec67d1dd95a275f39d4274367bae7f78ef03c011a28a745a4a0bbad`) containing `WorkEarn-1.0.0-release.aab` and `aab-report.txt`.
+  Kept for 30 days (until about 12 Dec 2026); downloading needs a GitHub login with access to the repository.
+- Passed inside the job (the workflow fails otherwise): package, versionCode and versionName equal `app.json` (`com.workearn.app`, 1, 1.0.0); `targetSdkVersion="36"`; the only permission is the AndroidX-internal
+  one; the signature check (`jarsigner -verify` must report "jar verified"). The artifact carries the name for signed bundles (`workearn-release-aab`, not `…-UNSIGNED-…`).
+- Signing certificate reported by the job: `CN=WorkEarn upload key, O=WorkEarn`, valid until 30 Mar 2054, **SHA-256 `AA:86:4D:BF:0D:45:5C:E6:79:19:EE:43:42:2D:96:DE:AC:64:D0:AB:9F:2A:B9:4A:23:D9:F5:51:9C:BC:19:6C`** —
+  identical to the fingerprint of the key handed to the developer. After the first upload, the Play Console shows the upload certificate's fingerprint under *App signing*; it must match.
+- jarsigner also prints informational warnings of the kind "Entry … is signed in JarFile but is not signed in JarInputStream" for the bundle's entries; the signature itself verified.
+  **Not verified:** how the Play Console treats the bundle (that is only visible on upload), and I could not download the AAB into this environment (artifact storage is blocked), so all of the above is the job's own output.
+- Earlier unsigned bundles remain in the Actions list for 30 days; only `workearn-release-aab` can be uploaded.
+
+**Earlier unsigned bundle (run #2, commit `230e743`)**
 
 - Run: <https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43205520385>
 - **Artifact: `workearn-UNSIGNED-aab`** (id 13939975897): <https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43205520385/artifacts/13939975897>
@@ -80,7 +94,7 @@ size, clipped chip rows and tab labels, noisy compact amounts, an incoherent sto
   `minSdkVersion="24"`, **`targetSdkVersion="36"`**, `compileSdkVersion="37"`; `allowBackup="false"`;
   only the internal signature permission listed above; **signature: unsigned** (`jar is unsigned`).
   The workflow does not list the bundle's native-library ABIs, so no claim is made about them here.
-- **The bundle is UNSIGNED, so Google Play will reject it.** Add the four upload-key secrets (`docs/ANDROID_RELEASE.md`) and re-run the workflow to get `workearn-release-aab`.
+- **That bundle is UNSIGNED, so Google Play would reject it.** It was replaced by the signed bundle of run #4 above.
 - **Not verified here:** I could not download the AAB into this environment (the artifact storage host is blocked), so the checks above are the workflow's own bundletool output, not a local inspection. The app has not been run from this bundle on a device.
 - Run #1 (commit `df1443d`) also succeeded but its bundle additionally declared the Google Play *install referrer* permission (pulled in by `expo-application`, which was only used to show the version).
   That dependency was removed in `230e743`; **do not use run #1's artifact.**
@@ -98,7 +112,7 @@ Build time on GitHub (run #2, from the job timestamps): the `build-aab` job took
 - The release workflow itself was also run (unsigned, no secrets) on the same commit after its changes (run [43242274226](https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43242274226)):
   **success**, same single AndroidX-internal permission, artifact `workearn-UNSIGNED-aab` (71,344,571 bytes, the same size as run #2; the app code did not change in between).
 - Limits: an emulator, not a physical phone, and only the first-run (empty database) state. It shows that the signing path and the app launch work. The release workflow's own signed path (reading the
-  secrets) runs for the first time when the secrets exist; its keystore step was exercised locally against good and bad inputs.
+  secrets) was first exercised in run #4 above, with the real secrets; before that its keystore step had been tested locally against good and bad inputs.
 
 ## 6. Google Play preparation
 
@@ -118,7 +132,7 @@ The complete beginner's version is `docs/PLAY_STORE_STAPPENPLAN_NL.md`.
 1. Create the Google Play developer account (one-time 25 USD, identity check) — first, because the check can take days.
 2. Find at least 12 testers with Android phones: Google requires a closed test with 12 testers opted in for 14 continuous days before a **new personal** account can apply for production access
    (<https://support.google.com/googleplay/android-developer/answer/14151465>).
-3. Add the two GitHub secrets (upload keystore as base64 + password; handed over outside the repository), then run the *Android release bundle (AAB)* workflow to get a **signed** `.aab`.
+3. **Done (12 Nov 2026):** the two GitHub secrets were added and run #4 produced the signed `.aab` (§5). For every new version: raise `android.versionCode` in `app.json`, run the *Android release bundle (AAB)* workflow again and upload the new bundle.
 4. Create the app in the Play Console, fill in the store listing and the declarations (Data safety, content rating, target audience, ads = none, financial features = none), and use the privacy-policy URL from §6.
 5. Publish the first version in the closed test, test it on your own phone (`docs/SMOKE_TEST.md`), apply for production after 14 days, then publish.
 6. Optionally replace the generated screenshots with device screenshots.
