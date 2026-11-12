@@ -9,6 +9,10 @@ All notable changes to WorkEarn. Versions follow `versionName` in `app.json`; `a
   Calendar / History / Statistics, restart after a kill, crash scan). Uses no real secret and publishes nothing.
 - Dutch beginner's guide for publishing on Google Play (`docs/PLAY_STORE_STAPPENPLAN_NL.md`) and a Dutch version of the privacy policy.
 
+### Verified
+- Signing path and app launch in CI (run 43242278257): throwaway-key signing of AAB and APK verified; the release APK installs and starts on an Android 14 emulator, renders Home, Calendar,
+  History and Statistics, survives a kill and restart, and logs no crash.
+
 ### Changed
 - The release workflow needs only two secrets (keystore + password); alias and key password have defaults, pasted whitespace is stripped, the keystore is opened early with a readable
   error, a signed bundle must verify with `jarsigner`, and the signing-certificate fingerprint is added to the report. It also runs on pushes to `main`.

@@ -37,9 +37,11 @@ Legend: **Completed** = implemented and verified by the evidence listed · **Not
 | Web-only preview code absent from the Android bundle | **verified** (grep of the plain-JS export: no `sql.js`, seed or demo data) |
 | Same checks on GitHub-hosted runners (Node 22) | **pass** in both release runs (`quality` job) |
 
-What the tests do **not** cover: they cannot run the app on a real Android device or emulator (none is available here). UI tests run in Jest with mocked native modules
-(reanimated, svg, router, keyboard controller, pickers) and a **real** SQLite engine. Behaviour that depends on the Android runtime (Hermes `Intl`, native date/time
-dialogs, keyboard handling under edge-to-edge, expo-sqlite itself) has therefore **not been exercised on a device**. Do a quick smoke test on a phone before releasing.
+What the tests do **not** cover: Jest cannot run the app on Android. UI tests run with mocked native modules (reanimated, svg, router, keyboard controller, pickers) and a **real**
+SQLite engine. Since 12 Nov 2026 the *Signing and device self-test* workflow also installs the signed release APK on an Android 14 **emulator** in GitHub Actions and checks launch,
+the empty-state Home screen, the Calendar / History / Statistics tabs, a restart after a kill and a crash-free log (see §5). Everything beyond that — entering data, running a shift,
+native date/time dialogs, keyboard handling under edge-to-edge, the CSV share sheet, and anything specific to a physical phone — has **not been exercised on a device**.
+Do the smoke test (`docs/SMOKE_TEST.md`) on a phone before releasing.
 
 ## 3. Visual QA
 
@@ -84,6 +86,17 @@ size, clipped chip rows and tab labels, noisy compact amounts, an incoherent sto
   That dependency was removed in `230e743`; **do not use run #1's artifact.**
 
 Build time on GitHub (run #2, from the job timestamps): the `build-aab` job took about 16 minutes (Gradle `bundleRelease` about 14.5 minutes); the whole workflow, including the `quality` job, about 17.5 minutes.
+
+**Signing and device self-test** (workflow *Signing and device self-test*, run [43242278257](https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43242278257), commit `cbe1972`, 12 Nov 2026): **success**.
+
+- `build-and-sign` (about 20 minutes): a throwaway upload key was created on the runner; `bundleRelease` and `assembleRelease` ran with it through the same signing code path as the release workflow;
+  the job then verified that the AAB (`jarsigner`) and the APK (`apksigner`, v2 scheme) carry exactly that key's certificate. No real secret was used.
+- `emulator` (2 min 17 s, Android 14 / API 34, x86_64): the APK installed; the app requested only the AndroidX-internal permission; the first-run Home screen rendered ("Add your first employer");
+  Calendar, History and Statistics rendered; the app started again after being force-stopped; no crash or ANR in the log (`RESULT: all checks passed`).
+- Evidence artifact `device-check-evidence` (id 13957166691; screenshots, UI dumps, log; kept 7 days). I could not download it from this environment (artifact storage is blocked), so the result above
+  is the script's own text assertions from the job log; I have not looked at the screenshots.
+- Limits: an emulator, not a physical phone, and only the first-run (empty database) state. It shows that the signing path and the app launch work. The release workflow's own signed path (reading the
+  secrets) runs for the first time when the secrets exist; its keystore step was exercised locally against good and bad inputs.
 
 ## 6. Google Play preparation
 
