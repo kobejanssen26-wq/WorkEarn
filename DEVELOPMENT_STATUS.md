@@ -95,6 +95,8 @@ Build time on GitHub (run #2, from the job timestamps): the `build-aab` job took
   Calendar, History and Statistics rendered; the app started again after being force-stopped; no crash or ANR in the log (`RESULT: all checks passed`).
 - Evidence artifact `device-check-evidence` (id 13957166691; screenshots, UI dumps, log; kept 7 days). I could not download it from this environment (artifact storage is blocked), so the result above
   is the script's own text assertions from the job log; I have not looked at the screenshots.
+- The release workflow itself was also run (unsigned, no secrets) on the same commit after its changes (run [43242274226](https://github.com/kobejanssen26-wq/WorkEarn/actions/runs/43242274226)):
+  **success**, same single AndroidX-internal permission, artifact `workearn-UNSIGNED-aab` (71,344,571 bytes, the same size as run #2; the app code did not change in between).
 - Limits: an emulator, not a physical phone, and only the first-run (empty database) state. It shows that the signing path and the app launch work. The release workflow's own signed path (reading the
   secrets) runs for the first time when the secrets exist; its keystore step was exercised locally against good and bad inputs.
 
