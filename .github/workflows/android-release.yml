@@ -1,0 +1,154 @@
+name: Android release bundle (AAB)
+
+# Builds the production Android App Bundle on GitHub's runners (no Expo account needed), verifies it with
+# Google's bundletool and stores it as a workflow artifact. Signing uses the upload key from repository secrets;
+# without them the bundle is UNSIGNED (it cannot be uploaded to Google Play) and the artifact is named accordingly.
+#
+# Secrets (Settings > Secrets and variables > Actions):
+#   ANDROID_UPLOAD_KEYSTORE_BASE64   base64 of the upload keystore (.jks)
+#   ANDROID_UPLOAD_STORE_PASSWORD
+#   ANDROID_UPLOAD_KEY_ALIAS
+#   ANDROID_UPLOAD_KEY_PASSWORD
+# See docs/ANDROID_RELEASE.md.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['claude/**']
+    tags: ['v*']
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  build-aab:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      WORKEARN_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+      WORKEARN_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+      WORKEARN_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+      CI: 'true'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Keystore location (outside the repository)
+        run: echo "WORKEARN_UPLOAD_STORE_FILE=$RUNNER_TEMP/upload-keystore.jks" >> "$GITHUB_ENV"
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Generate the native Android project (expo prebuild)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Prepare the upload keystore (only if secrets are configured)
+        id: signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$WORKEARN_UPLOAD_STORE_PASSWORD" ] && [ -n "$WORKEARN_UPLOAD_KEY_ALIAS" ] && [ -n "$WORKEARN_UPLOAD_KEY_PASSWORD" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$WORKEARN_UPLOAD_STORE_FILE"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+            echo "Upload keystore decoded."
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No upload keystore secrets configured - the bundle will be UNSIGNED and cannot be uploaded to Google Play."
+          fi
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Build the release bundle
+        working-directory: android
+        run: ./gradlew :app:bundleRelease --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=768m"
+
+      - name: Locate and verify the bundle with bundletool
+        id: verify
+        run: |
+          set -euo pipefail
+          AAB="android/app/build/outputs/bundle/release/app-release.aab"
+          test -f "$AAB"
+          gh release download --repo google/bundletool --pattern 'bundletool-all-*.jar' --output "$RUNNER_TEMP/bundletool.jar"
+          {
+            echo "# WorkEarn AAB verification"
+            echo
+            echo "File: $(basename "$AAB")  ($(du -h "$AAB" | cut -f1))"
+            echo "SHA-256: $(sha256sum "$AAB" | cut -d' ' -f1)"
+            echo
+            echo "## bundletool validate"
+            java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB" && echo "VALID"
+            echo
+            echo "## Base manifest"
+            java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle="$AAB" > "$RUNNER_TEMP/manifest.xml"
+            cat "$RUNNER_TEMP/manifest.xml"
+            echo
+            echo "## Signature"
+            jarsigner -verify -verbose:summary "$AAB" || true
+          } | tee aab-report.txt
+          # Hard assertions: identity, version and target API required by Google Play
+          grep -q 'package="com.workearn.app"' "$RUNNER_TEMP/manifest.xml"
+          grep -q 'android:versionCode="1"' "$RUNNER_TEMP/manifest.xml"
+          grep -q 'android:versionName="1.0.0"' "$RUNNER_TEMP/manifest.xml"
+          grep -q 'android:targetSdkVersion="36"' "$RUNNER_TEMP/manifest.xml"
+          if grep -q '<uses-permission' "$RUNNER_TEMP/manifest.xml"; then
+            echo "::warning::The bundle declares permissions:"; grep '<uses-permission' "$RUNNER_TEMP/manifest.xml"
+          else
+            echo "No Android permissions are declared."
+          fi
+          mkdir -p dist-aab
+          if [ "${{ steps.signing.outputs.signed }}" = "true" ]; then
+            cp "$AAB" dist-aab/WorkEarn-1.0.0-release.aab
+          else
+            cp "$AAB" dist-aab/WorkEarn-1.0.0-UNSIGNED.aab
+          fi
+          cp aab-report.txt dist-aab/
+          cat aab-report.txt >> "$GITHUB_STEP_SUMMARY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Upload the bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.signing.outputs.signed == 'true' && 'workearn-release-aab' || 'workearn-UNSIGNED-aab' }}
+          path: dist-aab/*
+          if-no-files-found: error
+          retention-days: 30
