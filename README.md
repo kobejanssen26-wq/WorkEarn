@@ -74,12 +74,18 @@ scripts/            Asset generation (icons/splash, store screenshots, feature g
 Three supported routes; details in [`docs/ANDROID_RELEASE.md`](docs/ANDROID_RELEASE.md).
 
 1. **GitHub Actions** (works without an Expo account): the *Android release bundle (AAB)* workflow builds with Gradle, validates the
-   bundle with bundletool, asserts package / version / target API and stores the AAB as a workflow artifact. Add the four upload-key
-   secrets to get a Play-uploadable, signed bundle.
+   bundle with bundletool, asserts package / version / target API and stores the AAB as a workflow artifact. Add the two upload-key
+   secrets (keystore + password) to get a Play-uploadable, signed bundle. The *Signing and device self-test* workflow proves the signing path
+   and an emulator launch without any secret.
 2. **EAS Build**: `npx eas-cli build --platform android --profile production` (requires `eas login` / `EXPO_TOKEN`).
 3. **Local**: `npx expo prebuild --platform android && cd android && ./gradlew :app:bundleRelease` (needs JDK 21 and the Android SDK).
 
 Target API level: **36** (Android 16), as required by Google Play for new apps and updates since 31 August 2026.
+
+## Publishing on Google Play
+
+Step-by-step guide for beginners (Dutch): [`docs/PLAY_STORE_STAPPENPLAN_NL.md`](docs/PLAY_STORE_STAPPENPLAN_NL.md) — account, testers, signing, store listing, declarations, closed test, production.
+Reference documents: [`docs/PLAY_LISTING.md`](docs/PLAY_LISTING.md), [`docs/PLAY_DATA_SAFETY.md`](docs/PLAY_DATA_SAFETY.md), [`docs/PLAY_CONTENT_RATING.md`](docs/PLAY_CONTENT_RATING.md).
 
 ## Store assets
 

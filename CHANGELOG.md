@@ -2,6 +2,18 @@
 
 All notable changes to WorkEarn. Versions follow `versionName` in `app.json`; `android.versionCode` increases with every upload to Google Play.
 
+## Unreleased
+
+### Added
+- Manual workflow *Signing and device self-test*: a throwaway upload key, signed AAB + APK, signature verification, and an Android 14 emulator smoke test (install, first-run screen,
+  Calendar / History / Statistics, restart after a kill, crash scan). Uses no real secret and publishes nothing.
+- Dutch beginner's guide for publishing on Google Play (`docs/PLAY_STORE_STAPPENPLAN_NL.md`) and a Dutch version of the privacy policy.
+
+### Changed
+- The release workflow needs only two secrets (keystore + password); alias and key password have defaults, pasted whitespace is stripped, the keystore is opened early with a readable
+  error, a signed bundle must verify with `jarsigner`, and the signing-certificate fingerprint is added to the report. It also runs on pushes to `main`.
+- The privacy policy has no placeholders any more: it names the developer by GitHub account and gives GitHub Issues and the Play-listing contact email as contacts.
+
 ## 1.0.0 (versionCode 1) — first release candidate
 
 ### Added

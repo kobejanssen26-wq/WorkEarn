@@ -61,7 +61,7 @@ WorkEarn gives estimates for your own tracking. It is not a payslip and not payr
 
 **Tags (suggest):** time tracking, productivity, shift work.
 
-## Nederlands (nl-BE)
+## Nederlands (Dutch — pick nl-NL, or nl-BE if the Console lists it)
 
 **App-naam (≤30):** `WorkEarn: Shift & Loon Tracker`
 
@@ -125,10 +125,14 @@ WorkEarn geeft schattingen voor je eigen bijhouden. Het is geen loonbrief en gee
 
 ## What only the developer can provide
 
+The click-by-click version of all of this, in Dutch, is [`PLAY_STORE_STAPPENPLAN_NL.md`](PLAY_STORE_STAPPENPLAN_NL.md).
+
 - Developer account details: developer name, contact **email** (public), and for organisations a verified address / D-U-N-S, as the Play Console asks.
-- **Privacy policy URL** — host `docs/PRIVACY_POLICY.md` (with your name and email filled in) at a public URL. None is provided here.
+- **Privacy policy URL** — the policy (English + Dutch, no placeholders) is hosted from this public repository:
+  `https://github.com/kobejanssen26-wq/WorkEarn/blob/HEAD/docs/PRIVACY_POLICY.md`. Keep the repository public and the file path unchanged, or the link breaks.
 - The Play Console declarations: Data safety (`docs/PLAY_DATA_SAFETY.md`), content rating (`docs/PLAY_CONTENT_RATING.md`), target audience, ads (none), financial features (none), app access (no login).
-- Countries / regions and price (free).
+- Countries / regions and price (free; a free app can never become paid).
 - The upload key (see `docs/ANDROID_RELEASE.md`) and enrolment in Play App Signing.
-- Any testing requirement for new developer accounts (a closed test with a minimum number of testers and days before production access applies to some new personal accounts — check the current rule in the Play Console).
+- The testing requirement for new **personal** developer accounts (created after 13 Nov 2023): a closed test with at least 12 testers opted in for 14 continuous days before you can
+  apply for production access ([Google's rule](https://support.google.com/googleplay/android-developer/answer/14151465)).
 - Real-device screenshots if you prefer them over the generated ones.

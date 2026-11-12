@@ -26,7 +26,7 @@ Note on **financial info**: the app lets users record their own earnings, but th
 | Declaration | Answer |
 | --- | --- |
 | Ads | **No ads** |
-| Privacy policy URL | **Developer must supply** a public URL hosting `docs/PRIVACY_POLICY.md` (completed with real contact details). No URL is provided in this repository. |
+| Privacy policy URL | `https://github.com/kobejanssen26-wq/WorkEarn/blob/HEAD/docs/PRIVACY_POLICY.md` (this public repository; English + Dutch). Keep the repository public and the path unchanged. |
 | Target audience | 18 and over (work and earnings tracking) |
 | Financial features declaration | "My app doesn't provide any financial features" (it only records user-entered work hours and wages; no payments, loans, banking or trading) |
 | Health apps declaration | Not a health app |
