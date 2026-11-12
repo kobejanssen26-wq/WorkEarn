@@ -3,9 +3,13 @@
 The automated tests run on a real SQLite engine but **not on an Android device**. Before you upload to Google Play, run this checklist once on a
 physical phone (ideally Android 14 or newer; also try Android 16, which this release targets).
 
+An automated emulator run (workflow *Signing and device self-test*, Android 14) already covers a small part of this on every release candidate: install, first-run screen, Calendar /
+History / Statistics opening, restart after a kill, and a crash-free log. The checklist below covers everything else, with real data and real fingers.
+
 ## Install the bundle on a phone
 
-Option A — Play Console **Internal testing** track (needs the *signed* bundle from the workflow), then install from the Play Store link.
+Option A — a Play Console **testing** track (needs the *signed* bundle from the workflow): upload it to your closed test (see [`PLAY_STORE_STAPPENPLAN_NL.md`](PLAY_STORE_STAPPENPLAN_NL.md)),
+add your own Google account as a tester and install from the Play Store link.
 
 Option B — sideload with bundletool (works with the unsigned bundle too; bundletool signs the generated APKs with a debug key for testing only):
 

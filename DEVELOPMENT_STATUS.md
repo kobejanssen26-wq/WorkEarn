@@ -91,17 +91,22 @@ Build time on GitHub (run #2, from the job timestamps): the `build-aab` job took
 | --- | --- |
 | Title, short and full description (EN + NL), category recommendation | **Completed** — `docs/PLAY_LISTING.md` (limits enforced by a test) |
 | App icon 512, feature graphic 1024 × 500, 8 screenshots 1080 × 1920 | **Completed** — `store/` (screenshots are renderings of the real UI with sample data, see `store/README.md`) |
-| Privacy policy text | **Completed**, needs your name and email — `docs/PRIVACY_POLICY.md`; **you must host it and supply the URL** |
+| Privacy policy (English + Dutch) | **Completed** — `docs/PRIVACY_POLICY.md`, no placeholders: the developer is named by GitHub account, contact is GitHub Issues or the contact email on the Play listing. URL for the Play Console: `https://github.com/kobejanssen26-wq/WorkEarn/blob/HEAD/docs/PRIVACY_POLICY.md` (checked: HTTP 200 and the final text). It stays valid only while the repository is public and the file keeps that path. |
 | Data safety answers, content rating preparation | **Completed** — `docs/PLAY_DATA_SAFETY.md`, `docs/PLAY_CONTENT_RATING.md` |
-| Publication / approval | **Not claimed.** The developer uploads the AAB manually. |
+| Beginner's step-by-step guide for publishing (Dutch) | **Completed** — `docs/PLAY_STORE_STAPPENPLAN_NL.md` (account, testers, signing, listing, declarations, closed test, production; says what was verified against Google sources and what was not) |
+| Publication / approval | **Not claimed.** The developer creates the Play account, runs the required closed test and uploads the signed AAB. |
 
 ## 7. Remaining manual actions (requires developer action)
 
-1. Create the upload keystore and add the four GitHub secrets (`docs/ANDROID_RELEASE.md`), then run the *Android release bundle (AAB)* workflow to get a **signed** `.aab`.
-2. Smoke-test the build on a real phone (`docs/SMOKE_TEST.md`, about 15 minutes).
-3. Fill in developer name / support email, host the privacy policy and enter its URL in the Play Console.
-4. Complete the Play Console declarations (Data safety, content rating, target audience, ads = none, financial features = none).
-5. Optionally replace the generated screenshots with device screenshots.
-6. Merge the development branch into your default branch (a pull request is not opened automatically).
-7. Git history: the first five commits on the branch (`ffb02de` … `df1443d`, pushed early in the session) are not signed, so GitHub shows them as *Unverified*; all later commits are signed.
+The complete beginner's version is `docs/PLAY_STORE_STAPPENPLAN_NL.md`.
+
+1. Create the Google Play developer account (one-time 25 USD, identity check) — first, because the check can take days.
+2. Find at least 12 testers with Android phones: Google requires a closed test with 12 testers opted in for 14 continuous days before a **new personal** account can apply for production access
+   (<https://support.google.com/googleplay/android-developer/answer/14151465>).
+3. Add the two GitHub secrets (upload keystore as base64 + password; handed over outside the repository), then run the *Android release bundle (AAB)* workflow to get a **signed** `.aab`.
+4. Create the app in the Play Console, fill in the store listing and the declarations (Data safety, content rating, target audience, ads = none, financial features = none), and use the privacy-policy URL from §6.
+5. Publish the first version in the closed test, test it on your own phone (`docs/SMOKE_TEST.md`), apply for production after 14 days, then publish.
+6. Optionally replace the generated screenshots with device screenshots.
+7. The repository's default branch is currently `claude/admiring-heisenberg-2fqqev` (it is the only branch), so there is nothing to merge. Optionally rename it to `main` in the repository settings (the workflows already run on `main`; GitHub redirects the old name, and the privacy-policy URL uses `HEAD`, which follows the default branch).
+8. Git history: the first five commits on the branch (`ffb02de` … `df1443d`, pushed early in the session) are not signed, so GitHub shows them as *Unverified*; all later commits are signed.
    Re-signing already-pushed commits would need a force-push, which was not done without your approval.
