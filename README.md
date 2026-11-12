@@ -65,7 +65,8 @@ src/i18n/           English (default) and Dutch dictionaries, locale formatting
 plugins/            Expo config plugin: production signing for the release build
 tests/              Jest tests (real SQLite via node:sqlite; UI tests with React Native Testing Library)
 docs/               Release guide, privacy policy, Play Data safety, Play listing
-store/              Google Play graphics
+store/              Google Play graphics (icon, feature graphic, screenshots)
+scripts/            Asset generation (icons/splash, store screenshots, feature graphic)
 ```
 
 ## Building the Android App Bundle (AAB)
@@ -79,6 +80,12 @@ Three supported routes; details in [`docs/ANDROID_RELEASE.md`](docs/ANDROID_RELE
 3. **Local**: `npx expo prebuild --platform android && cd android && ./gradlew :app:bundleRelease` (needs JDK 21 and the Android SDK).
 
 Target API level: **36** (Android 16), as required by Google Play for new apps and updates since 31 August 2026.
+
+## Store assets
+
+`npm run store:icons` regenerates the app icon / adaptive icon / splash images, `npm run store:screenshots` renders the real screens
+(react-native-web + an in-memory sql.js database with sample data, web-only code that is not part of the Android bundle) and
+`npm run store:feature-graphic` builds the Play feature graphic. Details and provenance: [`store/README.md`](store/README.md).
 
 ## Privacy
 
